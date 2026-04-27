@@ -154,11 +154,6 @@ Body:
 
 ---
 
-## 🤝 Contributing
-
-أي مساهمة مرحب بها! يمكنك عمل Fork ثم إرسال Pull Request.
-
----
 
 ## 📄 License
 
