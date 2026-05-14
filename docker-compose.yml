@@ -1,11 +1,69 @@
 version: '3.8'
+
 services:
   rabbitmq:
     image: rabbitmq:3-management
-    container_name: rabbitmq-broker
     ports:
       - "5672:5672"
       - "15672:15672"
+    healthcheck:
+      test: ["CMD", "rabbitmq-diagnostics", "-q", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  expense-db:
+    image: mysql:8.0
     environment:
-      RABBITMQ_DEFAULT_USER: guest
-      RABBITMQ_DEFAULT_PASS: guest
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: expense_db
+    ports:
+      - "3307:3306"
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  budget-db:
+    image: mysql:8.0
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: budget_db
+    ports:
+      - "3308:3306"
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  expense-service:
+    build: ./expense-service
+    ports:
+      - "8081:8081"
+    environment:
+      - DB_HOST=expense-db
+      - DB_USER=root
+      - DB_PASSWORD=root
+      - RABBITMQ_HOST=rabbitmq
+    depends_on:
+      rabbitmq:
+        condition: service_healthy
+      expense-db:
+        condition: service_healthy
+
+  budget-service:
+    build: ./budget-service
+    ports:
+      - "8082:8082"
+    environment:
+      - DB_HOST=budget-db
+      - DB_USER=root
+      - DB_PASSWORD=root
+      - RABBITMQ_HOST=rabbitmq
+    depends_on:
+      rabbitmq:
+        condition: service_healthy
+      budget-db:
+        condition: service_healthy
