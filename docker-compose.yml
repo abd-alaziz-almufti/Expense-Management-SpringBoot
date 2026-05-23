@@ -6,11 +6,14 @@ services:
     ports:
       - "5672:5672"
       - "15672:15672"
+    environment:
+      - RABBITMQ_ERLANG_COOKIE=secret_cookie
+      - HOME=/tmp
     healthcheck:
       test: ["CMD", "rabbitmq-diagnostics", "-q", "ping"]
       interval: 10s
       timeout: 5s
-      retries: 5
+      retries: 20
 
   expense-db:
     image: mysql:8.0
@@ -23,7 +26,7 @@ services:
       test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
       interval: 10s
       timeout: 5s
-      retries: 5
+      retries: 60
 
   budget-db:
     image: mysql:8.0
@@ -36,7 +39,7 @@ services:
       test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
       interval: 10s
       timeout: 5s
-      retries: 5
+      retries: 60
 
   expense-service:
     build: ./expense-service
